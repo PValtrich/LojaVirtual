@@ -36,7 +36,11 @@ namespace LojaVirtual.Views
                     this.Text = "Visualizar Usuário";
                 }
                 else
+                {
                     this.Text = "Alterar Usuário";
+                    //Na alteração a senha atual não aparece na tela, por isso o campo fica em branco
+                    lblSenha.Text = "Nova senha (deixe em branco para manter):";
+                }
             }
         }
 
@@ -61,7 +65,8 @@ namespace LojaVirtual.Views
             txtNome.Text = usuario.Nome;
             txtCpf.Text = usuario.Cpf;
             txtEmail.Text = usuario.Email;
-            txtSenha.Text = usuario.Senha;
+            //A senha guardada é um hash, que não deve aparecer na tela
+            txtSenha.Text = "";
             cbxPerfil.Text = usuario.Perfil;
             txtTelefone.Text = usuario.Telefone;
             dtpDataCadastro.Value = usuario.DataCadastro;
@@ -117,7 +122,8 @@ namespace LojaVirtual.Views
                 return false;
             }
 
-            if (txtSenha.Text == "")
+            //Na alteração a senha é opcional: se ficar em branco, a senha atual é mantida
+            if (txtId.Text == "" && txtSenha.Text == "")
             {
                 MessageBox.Show("Informe o campo \"Senha\".", "Atenção!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtSenha.Focus();

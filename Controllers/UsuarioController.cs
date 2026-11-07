@@ -24,7 +24,7 @@ namespace LojaVirtual.Controllers
             command.Parameters.AddWithValue("@Nome", usuario.Nome);
             command.Parameters.AddWithValue("@Cpf", usuario.Cpf);
             command.Parameters.AddWithValue("@Email", usuario.Email);
-            command.Parameters.AddWithValue("@Senha", usuario.Senha);
+            command.Parameters.AddWithValue("@Senha", SenhaHelper.GerarHash(usuario.Senha));
             command.Parameters.AddWithValue("@Perfil", usuario.Perfil);
             command.Parameters.AddWithValue("@Telefone", usuario.Telefone);
             command.Parameters.AddWithValue("@DataCadastro", usuario.DataCadastro);
@@ -33,12 +33,17 @@ namespace LojaVirtual.Controllers
 
         public int Alterar(Usuario usuario)
         {
+            //Se a senha ficar em branco, mantemos a senha que já está guardada
+            string trocarSenha = "";
+            if (usuario.Senha != "")
+                trocarSenha = "Senha = @Senha, ";
+
             string query =
                 "UPDATE Usuarios SET " +
                 "Nome = @Nome, " +
                 "CPF = @Cpf, " +
                 "Email = @Email, " +
-                "Senha = @Senha, " +
+                trocarSenha +
                 "Perfil = @Perfil, " +
                 "Telefone = @Telefone, " +
                 "DataCadastro = @DataCadastro " +
@@ -48,7 +53,8 @@ namespace LojaVirtual.Controllers
             command.Parameters.AddWithValue("@Nome", usuario.Nome);
             command.Parameters.AddWithValue("@Cpf", usuario.Cpf);
             command.Parameters.AddWithValue("@Email", usuario.Email);
-            command.Parameters.AddWithValue("@Senha", usuario.Senha);
+            if (usuario.Senha != "")
+                command.Parameters.AddWithValue("@Senha", SenhaHelper.GerarHash(usuario.Senha));
             command.Parameters.AddWithValue("@Perfil", usuario.Perfil);
             command.Parameters.AddWithValue("@Telefone", usuario.Telefone);
             command.Parameters.AddWithValue("@DataCadastro", usuario.DataCadastro);

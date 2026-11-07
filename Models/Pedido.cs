@@ -13,6 +13,12 @@ namespace LojaVirtual.Models
         public string FormaPagamento { get; set; }
         public string EnderecoEntrega { get; set; }
         public string CidadeEntrega { get; set; }
+        public PedidoItemCollection Itens { get; set; }
+
+        public Pedido()
+        {
+            Itens = new PedidoItemCollection();
+        }
 
         //Propriedades somente leitura, usadas para exibir
         //os dados já tratados na grade

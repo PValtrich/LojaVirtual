@@ -44,7 +44,7 @@ namespace LojaVirtual.Views
             this.lblTitulo.Name = "lblTitulo";
             this.lblTitulo.Size = new System.Drawing.Size(520, 44);
             this.lblTitulo.TabIndex = 4;
-            this.lblTitulo.Text = "Mercadinho Virtual";
+            this.lblTitulo.Text = "Loja Virtual";
             this.lblTitulo.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             //
             // painelBotoes
@@ -189,7 +189,7 @@ namespace LojaVirtual.Views
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "frmPrincipal";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Mercadinho Virtual - Sistema de Gestão";
+            this.Text = "Loja Virtual - Sistema de Gestão";
             this.painelBotoes.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();

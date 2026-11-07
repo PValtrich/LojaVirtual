@@ -9,10 +9,12 @@ namespace LojaVirtual.Views
     {
         //Criar instância da controller
         PedidoController pedidoController = new PedidoController();
+        PedidoItemController pedidoItemController = new PedidoItemController();
 
         //Atributos que armazenam os registros selecionados pelo usuário
         Cliente clientePedido;
         Usuario usuarioPedido;
+        PedidoItemCollection itensPedido = new PedidoItemCollection();
 
         //Parâmetros para definir a ação
         //1 = Cadastrar
@@ -25,6 +27,7 @@ namespace LojaVirtual.Views
         {
             InitializeComponent();
             Estilo.AplicarComCabecalho(this);
+            dgvItens.AutoGenerateColumns = false;
 
             //Se o objeto estiver nulo só podemos abrir no modo cadastro
             if (pedido == null)
@@ -53,6 +56,9 @@ namespace LojaVirtual.Views
             cbxFormaPagamento.Enabled = false;
             txtEnderecoEntrega.ReadOnly = true;
             txtCidadeEntrega.ReadOnly = true;
+            nudQuantidade.Enabled = false;
+            btnAdicionarItem.Enabled = false;
+            btnRemoverItem.Enabled = false;
 
             btnSalvar.Visible = false;
             btnCancelar.Text = "OK";
@@ -67,10 +73,21 @@ namespace LojaVirtual.Views
             usuarioPedido = pedido.Usuario;
             txtUsuarioNome.Text = usuarioPedido.Nome;
             dtpDataPedido.Value = pedido.DataPedido;
-            txtValorTotal.Text = pedido.ValorTotal.ToString();
             cbxFormaPagamento.Text = pedido.FormaPagamento;
             txtEnderecoEntrega.Text = pedido.EnderecoEntrega;
             txtCidadeEntrega.Text = pedido.CidadeEntrega;
+
+            //Os itens não vêm junto com o pedido, então buscamos eles no banco
+            itensPedido = pedidoItemController.GetByPedido(pedido.PedidoId);
+            AtualizarItens();
+        }
+
+        //Atualiza a grade e o valor total sempre que os itens mudam
+        void AtualizarItens()
+        {
+            dgvItens.DataSource = null;
+            dgvItens.DataSource = itensPedido;
+            txtValorTotal.Text = itensPedido.ValorTotal().ToString("C");
         }
 
         private void btnCancelar_Click(object sender, EventArgs e)
@@ -116,11 +133,10 @@ namespace LojaVirtual.Views
                 return false;
             }
 
-            decimal valorTotal;
-            if (!decimal.TryParse(txtValorTotal.Text, out valorTotal) || valorTotal < 0)
+            if (itensPedido.Count == 0)
             {
-                MessageBox.Show("O campo \"Valor total\" deve ser um número válido, maior ou igual a zero.", "Atenção!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtValorTotal.Focus();
+                MessageBox.Show("Adicione pelo menos um item ao pedido.", "Atenção!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                btnAdicionarItem.Focus();
                 return false;
             }
 
@@ -156,14 +172,15 @@ namespace LojaVirtual.Views
 
             //Instanciamos o objeto e mapeamos as informações com ele
             //OBS: não mapeamos o campo ID agora, pois a tabela é IDENTITY
+            //OBS: o valor total não é mapeado, pois a controller calcula a partir dos itens
             Pedido pedido = new Pedido();
             pedido.Cliente = clientePedido;
             pedido.Usuario = usuarioPedido;
             pedido.DataPedido = dtpDataPedido.Value;
-            pedido.ValorTotal = decimal.Parse(txtValorTotal.Text);
             pedido.FormaPagamento = cbxFormaPagamento.Text;
             pedido.EnderecoEntrega = txtEnderecoEntrega.Text;
             pedido.CidadeEntrega = txtCidadeEntrega.Text;
+            pedido.Itens = itensPedido;
 
             //Se o campo ID estiver vazio estamos no modo cadastro,
             //senão estamos no modo alteração
@@ -231,6 +248,49 @@ namespace LojaVirtual.Views
                 usuarioPedido = frm.usuarioSelecao;
                 txtUsuarioNome.Text = usuarioPedido.Nome;
             }
+        }
+
+        private void btnAdicionarItem_Click(object sender, EventArgs e)
+        {
+            //Abro a tela de seleção de produtos exibindo o botão "Selecionar"
+            frmProdutoSelecao frm = new frmProdutoSelecao(true);
+            //Se o resultado não for OK, o usuário não selecionou nenhum produto
+            if (frm.ShowDialog() != DialogResult.OK)
+                return;
+
+            //Se o produto já estiver no pedido, somamos a quantidade em vez de criar outra linha
+            PedidoItem itemExistente = null;
+            foreach (PedidoItem item in itensPedido)
+            {
+                if (item.Produto.ProdutoId == frm.produtoSelecao.ProdutoId)
+                    itemExistente = item;
+            }
+
+            if (itemExistente != null)
+                itemExistente.Quantidade += (int)nudQuantidade.Value;
+            else
+            {
+                PedidoItem novoItem = new PedidoItem();
+                novoItem.Produto = frm.produtoSelecao;
+                novoItem.Quantidade = (int)nudQuantidade.Value;
+                novoItem.PrecoUnitario = frm.produtoSelecao.Preco;
+                itensPedido.Add(novoItem);
+            }
+
+            AtualizarItens();
+        }
+
+        private void btnRemoverItem_Click(object sender, EventArgs e)
+        {
+            //Valido se possui item selecionado na grade
+            if (dgvItens.CurrentRow == null)
+            {
+                MessageBox.Show("Nenhum item selecionado.", "Informação!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            itensPedido.RemoveAt(dgvItens.CurrentRow.Index);
+            AtualizarItens();
         }
     }
 }
