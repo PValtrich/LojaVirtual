@@ -1,5 +1,9 @@
 
-CREATE DATABASE LojaVirtual;
+-- Execute em um servidor que ainda não tenha o banco LojaVirtual.
+-- Se o banco já existir, o script não apaga nada: o CREATE TABLE acusa que a tabela já existe.
+-- Para atualizar um banco criado antes, use Migracao_ItensPedido.sql.
+IF DB_ID(N'LojaVirtual') IS NULL
+    CREATE DATABASE LojaVirtual;
 GO
 
 USE LojaVirtual;
